@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SD ISLAM TERPADU 'AISYIYAH TEBING TINGGI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        .hero-pattern {
+            background-color: #2e7d32;
+            background-image: radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.2) 0%, transparent 50%), radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.2) 0%, transparent 50%);
+        }
+        .announcement-scroll {
+            animation: scroll 20s linear infinite;
+        }
+        @keyframes scroll {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        .admin-panel {
+            transition: all 0.3s ease;
+        }
+        .video-container {
+            position: relative;
+        }
+        .edit-video-btn, .edit-btn {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .video-container:hover .edit-video-btn, .editable-container:hover .edit-btn {
+            opacity: 1;
+        }
+        .modal {
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .tab-active {
+            border-bottom: 3px solid #2e7d32;
+            color: #2e7d32;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Admin Login Modal -->
+    <div id="loginModal" class="modal fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Login Admin</h2>
+                <button id="closeLoginModal" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                    <input type="text" id="username" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500" required>
+                </div>
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="password" id="password" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500" required>
+                </div>
+                <div id="loginError" class="text-red-500 text-sm hidden">Username atau password salah!</div>
+                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md transition duration-300">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Video Edit Modal -->
+    <div id="videoEditModal" class="modal fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-lg p-8 max-w-lg w-full">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Edit Video</h2>
+                <button id="closeVideoModal" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <form id="videoEditForm" class="space-y-4">
+                <input type="hidden" id="videoId">
+                <div>
+                    <label for="videoTitle" class="block text-sm font-medium text-gray-700 mb-1">Judul Video</label>
+                    <input type="text" id="videoTitle" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500" required>
+                </div>
+                <div>
+                    <label for="videoDescription" class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
+                    <textarea id="videoDescription" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500" required></textarea>
+                </div>
+                <div>
+                    <label for="videoEmbed" class="block text-sm font-medium text-gray-700 mb-1">Kode Embed Video (YouTube)</label>
+                    <input type="text" id="videoEmbed" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500" placeholder="Contoh: dQw4w9WgXcQ" required>
+                    <p class="text-xs text-gray-500 mt-1">Masukkan kode ID YouTube (bagian terakhir dari URL YouTube)</p>
+                </div>
+                <div class="flex justify-end">
+                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-md transition duration-300">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admission Form Fields Edit Modal -->
+    <div id="admissionFieldsModal" class="modal fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-lg p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Edit Formulir Pendaftaran</h2>
+                <button id="closeAdmissionFieldsModal" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="mb-4">
+                <p class="text-gray-600 mb-2">Kelola kolom formulir pendaftaran siswa baru. Tambah, edit, atau hapus kolom sesuai kebutuhan.</p>
+                <div class="flex justify-end mb-4">
+                    <button id="addFieldBtn" class="flex items-center bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md transition duration-300">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Tambah Kolom
+                    </button>
+                </div>
+            </div>
+            <form id="admissionFieldsForm">
+                <div id="formFieldsList" class="space-y-4">
+                    <!-- Form fields will be added here dynamically -->
+                </div>
+                <div class="flex justify-end mt-6">
+                    <button type="button" id="cancelAdmissionFields" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 px-6 rounded-md transition duration-300 mr-3">Batal</button>
+                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-md transition duration-300">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Field Modal -->
+    <div id="addFieldModal" class="modal fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center hidden">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Tambah Kolom Baru</h2>
+                <button id="closeAddFieldModal" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <form id="addFieldForm" class="space-y-4">
+                <div>
+                    <label for="fieldLabel" class="block text-sm font-medium text-gray-700 mb-1">Label Kolom</label>
+                    <input type="text" id="fieldLabel" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500" required>
+                </div>
+                <div>
+                    <label for="fieldType" class="block text-sm font-medium text-gray-700 mb-1">Tipe Kolom</label>
+                    <select id="fieldType" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500" required>
+                        <option value="text">Teks</option>
+                        <option value="email">Email</option>
+                        <option value="tel">Nomor Telepon</option>
+                        <option value="number">Angka</option>
+                        <option value="date">Tanggal</option>
+                        <option value="select">Pilihan (Dropdown)</option>
+                        <option value="textarea">Teks Panjang</option>
+                        <option value="file">Unggah File</option>
+                    </select>
+                </div>
+                <div id="optionsContainer" class="hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Pilihan (satu per baris)</label>
+                    <textarea id="fieldOptions" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500" placeholder="Pilihan 1&#10;Pilihan 2&#10;Pilihan 3"></textarea>
+                </div>
+                <div>
+                    <label for="fieldRequired" class="flex items-center">
+                        <input type="checkbox" id="fieldRequired" class="mr-2">
+                        <span class="text-sm text-gray-700">Wajib diisi</span>
+                    </label>
+                </div>
+                <div class="flex justify-end">
+                    <button type="button" id="cancelAddField" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 px-6 rounded-md transition duration-300 mr-3">Batal</button>
+                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-md transition duration-300">Tambah</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Article Edit Modal -->
+    <div id="articleModal" class="modal fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-lg p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800" id="articleModalTitle">Tambah Artikel</h2>
+                <button id="closeArticleModal" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <form id="articleForm" class="space-y-4">
+                <input type="hidden" id="articleId">
+                <div>
+                    <label for="articleTitle" class="block text-sm font-medium text-gray-700 mb-1">Judul Artikel</label>
+                    <input type="text" id="articleTitle" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500" required>
+                </div>
+                <div>
+                    <label for="articleCategory" class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
+                    <select id="articleCategory" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500" required>
+                        <option value="berita">Berita Sekolah</option>
+                        <option value="prestasi">Prestasi</option>
+                        <option value="kegiatan">Kegiatan</option>
+                        <option value="pengumuman">Pengumuman</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="articleDate" class="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
+                    <input type="date" id="articleDate" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500" required>
+                </div>
+                <div>
+                    <label for="articleImage" class="block text-sm font-medium text-gray-700 mb-1">Gambar (URL)</label>
+                    <input type="text" id="articleImage" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500" placeholder="Masukkan URL gambar atau gunakan gambar default">
+                    <div class="grid grid-cols-4 gap-2 mt-2">
+                        <button type="button" class="image-preset p-1 border rounded hover:bg-gray-100" data-color="green">
+                            <div class="bg-green-500 h-10 w-full rounded"></div>
+                        </button>
+                        <button type="button" class="image-preset p-1 border rounded hover:bg-gray-100" data-color="yellow">
+                            <div class="bg-yellow-500 h-10 w-full rounded"></div>
+                        </button>
+                        <button type="button" class="image-preset p-1 border rounded hover:bg-gray-100" data-color="blue">
+                            <div class="bg-blue-500 h-10 w-full rounded"></div>
+                        </button>
+                        <button type="button" class="image-preset p-1 border rounded hover:bg-gray-100" data-color="red">
+                            <div class="bg-red-500 h-10 w-full rounded"></div>
+                        </button>
+                    </div>
+                </div>
+                <div>
+                    <label for="articleContent" class="block text-sm font-medium text-gray-700 mb-1">Konten Artikel</label>
+                    <textarea id="articleContent" rows="8" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500" required></textarea>
+                </div>
+                <div class="flex justify-end">
+                    <button type="button" id="cancelArticle" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 px-6 rounded-md transition duration-300 mr-3">Batal</button>
+                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-md transition duration-300">Simpan Artikel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="adminPanel" class="admin-panel fixed top-0 right-0 h-screen w-72 bg-white shadow-lg z-40 transform translate-x-full">
+        <div class="p-4 bg-green-600 text-white">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold">Panel Admin</h3>
+                <button id="closeAdminPanel" class="text-white hover:text-gray-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div class="p-4">
+            <p class="text-sm text-gray-600 mb-4">Selamat datang, Admin!</p>
+            <div class="space-y-3">
+                <button id="manageAdmissionBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md transition duration-300 text-sm flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Kelola Form Pendaftaran
+                </button>
+                <button id="manageArticlesBtn" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 px-4 rounded-md transition duration-300 text-sm flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
+                    </svg>
+                    Kelola Artikel
+                </button>
+                <button id="logoutBtn" class="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-md transition duration-300 text-sm flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                    </svg>
+                    Logout
+                </button>
+            </div>
+            <div class="mt-6">
+                <h4 class="font-medium text-gray-700 mb-2">Petunjuk:</h4>
+                <p class="text-xs text-gray-600">Arahkan kursor ke area video dan klik tombol "Edit" untuk mengubah video.</p>
+                <p class="text-xs text-gray-600 mt-1">Gunakan tombol di atas untuk mengelola formulir pendaftaran dan artikel.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="bg-white shadow-md sticky top-0 z-30">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center">
+                <div class="w-12 h-12 rounded-full bg-green-600 flex items-center justify-center text-white font-bold text-xl mr-3">SD</div>
+                <div>
+                    <h1 class="text-xl font-bold text-green-800">SD ISLAM TERPADU 'AISYIYAH</h1>
+                    <p class="text-xs text-green-600">TEBING TINGGI</p>
+                </div>
+            </div>
+            
+            <!-- Mobile menu button -->
+            <div class="flex items-center">
+                <button id="adminLoginBtn" class="mr-4 text-sm text-green-600 hover:text-green-800 hidden md:block">
+                    Admin
+                </button>
+                <button id="mobile-menu-button" class="md:hidden text-gray-600 focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Desktop Navigation -->
+            <nav class="hidden md:flex space-x-6">
+                <a href="#beranda" class="text-green-800 font-medium hover:text-green-600 transition">Beranda</a>
+                <a href="#profil" class="text-gray-600 hover:text-green-600 transition">Profil</a>
+                <a href="#program" class="text-gray-600 hover:text-green-600 transition">Program</a>
+                <a href="#fasilitas" class="text-gray-600 hover:text-green-600 transition">Fasilitas</a>
+                <a href="#artikel" class="text-gray-600 hover:text-green-600 transition">Artikel</a>
+                <a href="#pendaftaran" class="text-gray-600 hover:text-green-600 transition">Pendaftaran</a>
+                <a href="#kontak" class="text-gray-600 hover:text-green-600 transition">Kontak</a>
+            </nav>
+        </div>
+        
+        <!-- Mobile Navigation -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t">
+            <div class="container mx-auto px-4 py-2 space-y-2">
+                <a href="#beranda" class="block py-2 text-green-800 font-medium">Beranda</a>
+                <a href="#profil" class="block py-2 text-gray-600">Profil</a>
+                <a href="#program" class="block py-2 text-gray-600">Program</a>
+                <a href="#fasilitas" class="block py-2 text-gray-600">Fasilitas</a>
+                <a href="#artikel" class="block py-2 text-gray-600">Artikel</a>
+                <a href="#pendaftaran" class="block py-2 text-gray-600">Pendaftaran</a>
+                <a href="#kontak" class="block py-2 text-gray-600">Kontak</a>
+                <a href="#" id="mobileAdminBtn" class="block py-2 text-green-600">Admin</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Announcement Bar -->
+    <div class="bg-yellow-500 text-white py-2 overflow-hidden">
+        <div class="announcement-scroll whitespace-nowrap">
+            📢 Pendaftaran Tahun Ajaran 2023/2024 telah dibuka! | 🏆 Selamat kepada tim hafalan Al-Qur'an yang meraih juara provinsi | 📚 Ujian Tengah Semester akan dilaksanakan pada tanggal 15-20 Oktober 2023
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section id="beranda" class="hero-pattern text-white">
+        <div class="container mx-auto px-4 py-20 md:py-32 flex flex-col md:flex-row items-center">
+            <div class="md:w-1/2 mb-10 md:mb-0">
+                <h2 class="text-3xl md:text-5xl font-bold mb-6">Pendidikan Islam Berkualitas untuk Generasi Qur'ani</h2>
+                <p class="text-lg mb-8 text-green-100">SD Islam Terpadu 'Aisyiyah Tebing Tinggi menyediakan lingkungan belajar yang islami dengan kurikulum terbaik untuk mengembangkan potensi setiap siswa.</p>
+                <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+                    <a href="#pendaftaran" class="bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-3 px-6 rounded-lg transition duration-300 text-center">Daftar Sekarang</a>
+                    <a href="#program" class="bg-transparent border-2 border-white hover:bg-white hover:text-green-800 text-white font-medium py-3 px-6 rounded-lg transition duration-300 text-center">Lihat Program</a>
+                </div>
+            </div>
+            <div class="md:w-1/2 flex justify-center">
+                <div class="video-container relative w-full max-w-md">
+                    <div class="absolute -top-4 -left-4 w-full h-full bg-yellow-500 rounded-lg"></div>
+                    <div class="relative bg-white p-6 rounded-lg shadow-lg">
+                        <div id="heroVideo" class="bg-gray-200 rounded-lg overflow-hidden aspect-video">
+                            <div class="w-full h-full flex items-center justify-center">
+                                <svg class="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <button data-video-id="hero" class="edit-video-btn absolute top-8 right-8 bg-green-600 hover:bg-green-700 text-white rounded-full p-2 shadow-lg hidden">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                            </svg>
+                        </button>
+                        <h3 class="text-xl font-bold text-gray-800 mt-4 mb-2">Sekolah Unggulan Berbasis Islam</h3>
+                        <p class="text-gray-600">Menggabungkan kurikulum nasional dengan nilai-nilai keislaman untuk membentuk generasi yang berakhlak mulia dan berprestasi.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="profil" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">Profil Sekolah</h2>
+                <div class="w-24 h-1 bg-green-600 mx-auto"></div>
+            </div>
+            
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2 mb-8 md:mb-0">
+                    <div class="video-container relative">
+                        <div id="profileVideo" class="bg-gray-200 rounded-lg overflow-hidden aspect-video">
+                            <div class="w-full h-full flex items-center justify-center">
+                                <svg class="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <button data-video-id="profile" class="edit-video-btn absolute top-2 right-2 bg-green-600 hover:bg-green-700 text-white rounded-full p-2 shadow-lg hidden">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="md:w-1/2 md:pl-12">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">Sejarah Singkat</h3>
+                    <p class="text-gray-600 mb-6">SD Islam Terpadu 'Aisyiyah Tebing Tinggi didirikan pada tahun 2010 oleh Yayasan 'Aisyiyah dengan komitmen untuk memberikan pendidikan berkualitas yang mengembangkan potensi akademik dan karakter islami siswa. Selama lebih dari 10 tahun, kami telah mendidik ribuan siswa yang kini berhasil di berbagai bidang.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <h4 class="font-semibold text-green-800 mb-2">Visi</h4>
+                            <p class="text-gray-600">Menjadi lembaga pendidikan Islam terdepan yang menghasilkan generasi Qur'ani, berakhlak mulia, dan berprestasi.</p>
+                        </div>
+                        <div class="bg-yellow-50 p-4 rounded-lg">
+                            <h4 class="font-semibold text-yellow-800 mb-2">Misi</h4>
+                            <p class="text-gray-600">Menyelenggarakan pendidikan Islam berkualitas dengan metode pembelajaran inovatif dan komprehensif.</p>
+                        </div>
+                    </div>
+                    
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">Mengapa Memilih Kami?</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <svg class="w-5 h-5 text-green-600 mr-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span class="text-gray-600"><span class="font-medium text-gray-800">Kurikulum Terintegrasi</span> - Menggabungkan kurikulum nasional dan nilai-nilai keislaman untuk pembelajaran yang komprehensif.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-5 h-5 text-green-600 mr-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span class="text-gray-600"><span class="font-medium text-gray-800">Program Tahfidz</span> - Program unggulan hafalan Al-Qur'an dengan metode yang menyenangkan.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-5 h-5 text-green-600 mr-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span class="text-gray-600"><span class="font-medium text-gray-800">Tenaga Pengajar Berkualitas</span> - Guru-guru berpengalaman dan bersertifikasi yang berdedikasi pada perkembangan siswa.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-5 h-5 text-green-600 mr-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span class="text-gray-600"><span class="font-medium text-gray-800">Lingkungan Islami</span> - Menciptakan suasana belajar yang islami dan kondusif untuk perkembangan anak.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Programs Section -->
+    <section id="program" class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">Program Unggulan</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">Kami menawarkan berbagai program pendidikan yang dirancang untuk memenuhi kebutuhan akademik dan spiritual setiap siswa.</p>
+                <div class="w-24 h-1 bg-green-600 mx-auto mt-4"></div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Program 1 -->
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105">
+                    <div class="h-3 bg-green-600"></div>
+                    <div class="p-6">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-center text-gray-800 mb-2">Program Tahfidz Qur'an</h3>
+                        <div class="video-container relative mb-4">
+                            <div id="tahfidzVideo" class="bg-gray-200 rounded-lg overflow-hidden aspect-video">
+                                <div class="w-full h-full flex items-center justify-center">
+                                    <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <button data-video-id="tahfidz" class="edit-video-btn absolute top-2 right-2 bg-green-600 hover:bg-green-700 text-white rounded-full p-2 shadow-lg hidden">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <ul class="space-y-2 mb-6">
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-green-500 mr-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-gray-600">Target hafalan sesuai jenjang kelas</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-green-500 mr-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-gray-600">Metode menghafal yang menyenangkan</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-green-500 mr-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-gray-600">Pembimbing tahfidz bersertifikat</span>
+                            </li>
+                        </ul>
+                        <a href="#" class="block text-center bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded transition duration-300">Lihat Detail</a>
+                    </div>
+                </div>
+                
+                <!-- Program 2 -->
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105">
+                    <div class="h-3 bg-yellow-500"></div>
+                    <div class="p-6">
+                        <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-center text-gray-800 mb-2">Program Akademik Unggulan</h3>
+                        <div class="video-container relative mb-4">
+                            <div id="academicVideo" class="bg-gray-200 rounded-lg overflow-hidden aspect-video">
+                                <div class="w-full h-full flex items-center justify-center">
+                                    <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <button data-video-id="academic" class="edit-video-btn absolute top-2 right-2 bg-green-600 hover:bg-green-700 text-white rounded-full p-2 shadow-lg hidden">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <ul class="space-y-2 mb-6">
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-green-500 mr-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-gray-600">Kurikulum nasional plus</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-green-500 mr-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-gray-600">Pembelajaran berbasis proyek</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-green-500 mr-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-gray-600">Pengembangan literasi dan numerasi</span>
+                            </li>
+                        </ul>
+                        <a href="#" class="block text-center bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 px-4 rounded transition duration-300">Lihat Detail</a>
+                    </div>
+                </div>
+                
+                <!-- Program 3 -->
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105">
+                    <div class="h-3 bg-green-600"></div>
+                    <div class="p-6">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-center text-gray-800 mb-2">Pembinaan Karakter Islami</h3>
+                        <div class="video-container relative mb-4">
+                            <div id="characterVideo" class="bg-gray-200 rounded-lg overflow-hidden aspect-video">
+                                <div class="w-full h-full flex items-center justify-center">
+                                    <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <button data-video-id="character" class="edit-video-btn absolute top-2 right-2 bg-green-600 hover:bg-green-700 text-white rounded-full p-2 shadow-lg hidden">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <ul class="space-y-2 mb-6">
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-green-500 mr-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-gray-600">Pembiasaan akhlak mulia</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-green-500 mr-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-gray-600">Praktik ibadah sehari-hari</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-green-500 mr-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-gray-600">Program kepemimpinan dan sosial</span>
+                            </li>
+                        </ul>
+                        <a href="#" class="block text-center bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded transition duration-300">Lihat Detail</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Articles Section -->
+    <section id="artikel" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">Artikel & Berita</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">Informasi terbaru seputar kegiatan dan prestasi sekolah kami.</p>
+                <div class="w-24 h-1 bg-green-600 mx-auto mt-4"></div>
+            </div>
+            
+            <div class="flex justify-end mb-6">
+                <button id="addArticleBtn" class="flex items-center bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md transition duration-300 hidden">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    Tambah Artikel
+                </button>
+            </div>
+            
+            <div class="mb-8">
+                <div class="flex overflow-x-auto space-x-4 pb-4">
+                    <button class="article-filter whitespace-nowrap px-4 py-2 rounded-full bg-green-600 text-white font-medium" data-category="all">Semua</button>
+                    <button class="article-filter whitespace-nowrap px-4 py-2 rounded-full bg-gray-200 text-gray-700 font-medium" data-category="berita">Berita Sekolah</button>
+                    <button class="article-filter whitespace-nowrap px-4 py-2 rounded-full bg-gray-200 text-gray-700 font-medium" data-category="prestasi">Prestasi</button>
+                    <button class="article-filter whitespace-nowrap px-4 py-2 rounded-full bg-gray-200 text-gray-700 font-medium" data-category="kegiatan">Kegiatan</button>
+                    <button class="article-filter whitespace-nowrap px-4 py-2 rounded-full bg-gray-200 text-gray-700 font-medium" data-category="pengumuman">Pengumuman</button>
+                </div>
+            </div>
+            
+            <div id="articlesContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Articles will be added here dynamically -->
+            </div>
+            
+            <div id="noArticlesMessage" class="text-center py-12 hidden">
+                <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
+                </svg>
+                <h3 class="text-xl font-bold text-gray-700 mb-2">Belum Ada Artikel</h3>
+                <p class="text-gray-500">Artikel akan segera ditambahkan. Silakan kembali lagi nanti.</p>
+            </div>
+            
+            <div class="text-center mt-8">
+                <button id="loadMoreArticles" class="inline-block bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-lg transition duration-300 hidden">Lihat Lebih Banyak</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Admission Section -->
+    <section id="pendaftaran" class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">Pendaftaran Siswa Baru</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">Daftarkan putra-putri Anda untuk mendapatkan pendidikan Islam berkualitas di SD Islam Terpadu 'Aisyiyah Tebing Tinggi.</p>
+                <div class="w-24 h-1 bg-green-600 mx-auto mt-4"></div>
+            </div>
+            
+            <div class="max-w-4xl mx-auto">
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                    <div class="p-6 bg-green-600 text-white flex justify-between items-center">
+                        <h3 class="text-xl font-bold">Formulir Pendaftaran</h3>
+                        <button id="editAdmissionFormBtn" class="edit-btn bg-white text-green-600 hover:bg-green-50 rounded-full p-2 hidden">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="p-6">
+                        <form id="admissionForm" class="space-y-6">
+                            <div id="admissionFormFields">
+                                <!-- Default form fields -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                    <div>
+                                        <label for="fullName" class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap Siswa</label>
+                                        <input type="text" id="fullName" name="fullName" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500" required>
+                                    </div>
+                                    <div>
+                                        <label for="birthDate" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Lahir</label>
+                                        <input type="date" id="birthDate" name="birthDate" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                    <div>
+                                        <label for="parentName" class="block text-sm font-medium text-gray-700 mb-1">Nama Orang Tua/Wali</label>
+                                        <input type="text" id="parentName" name="parentName" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500" required>
+                                    </div>
+                                    <div>
+                                        <label for="phoneNumber" class="block text-sm font-medium text-gray-700 mb-1">Nomor Telepon</label>
+                                        <input type="tel" id="phoneNumber" name="phoneNumber" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-6">
+                                    <label for="address" class="block text-sm font-medium text-gray-700 mb-1">Alamat Lengkap</label>
+                                    <textarea id="address" name="address" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500" required></textarea>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                    <div>
+                                        <label for="previousSchool" class="block text-sm font-medium text-gray-700 mb-1">Asal Sekolah (TK/RA)</label>
+                                        <input type="text" id="previousSchool" name="previousSchool" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500">
+                                    </div>
+                                    <div>
+                                        <label for="registrationType" class="block text-sm font-medium text-gray-700 mb-1">Jenis Pendaftaran</label>
+                                        <select id="registrationType" name="registrationType" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500" required>
+                                            <option value="">Pilih Jenis Pendaftaran</option>
+                                            <option value="regular">Reguler</option>
+                                            <option value="scholarship">Beasiswa</option>
+                                            <option value="transfer">Pindahan</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="border-t border-gray-200 pt-6">
+                                <div class="flex items-center mb-4">
+                                    <input type="checkbox" id="termsAgreement" name="termsAgreement" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded" required>
+                                    <label for="termsAgreement" class="ml-2 block text-sm text-gray-700">
+                                        Saya menyatakan bahwa data yang diisi adalah benar dan setuju dengan <a href="#" class="text-green-600 hover:text-green-800">syarat dan ketentuan</a> yang berlaku.
+                                    </label>
+                                </div>
+                                
+                                <div class="flex justify-end">
+                                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-md transition duration-300">Kirim Pendaftaran</button>
+                                </div>
+                            </div>
+                        </form>
+                        
+                        <div id="admissionSuccess" class="hidden mt-6 p-4 bg-green-100 text-green-700 rounded-md">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="font-medium">Pendaftaran berhasil dikirim!</span>
+                            </div>
+                            <p class="mt-2">Terima kasih telah mendaftar. Tim kami akan menghubungi Anda dalam 2-3 hari kerja untuk proses selanjutnya.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">Jadwal Pendaftaran</h4>
+                        <p class="text-gray-600">Pendaftaran dibuka mulai 1 Januari hingga 30 April 2023. Daftar lebih awal untuk mendapatkan prioritas.</p>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
+                            <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">Persyaratan Dokumen</h4>
+                        <p class="text-gray-600">Siapkan dokumen seperti akta kelahiran, kartu keluarga, dan foto terbaru. Dokumen lengkap akan diminta setelah pendaftaran awal.</p>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                            </svg>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">Proses Seleksi</h4>
+                        <p class="text-gray-600">Proses seleksi meliputi tes kemampuan dasar dan wawancara dengan orang tua. Hasil seleksi akan diumumkan 2 minggu setelah tes.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="kontak" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">Hubungi Kami</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">Jika Anda memiliki pertanyaan atau ingin informasi lebih lanjut, jangan ragu untuk menghubungi kami.</p>
+                <div class="w-24 h-1 bg-green-600 mx-auto mt-4"></div>
+            </div>
+            
+            <div class="flex flex-col md:flex-row">
+                <div class="md:w-1/2 mb-8 md:mb-0 md:pr-8">
+                    <div class="bg-gray-50 p-6 rounded-lg shadow-sm">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">Informasi Kontak</h3>
+                        
+                        <div class="space-y-4">
+                            <div class="flex items-start">
+                                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-800">Alamat</h4>
+                                    <p class="text-gray-600">Jl. Pendidikan Islam No. 123, Tebing Tinggi, Sumatera Utara</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-800">Telepon</h4>
+                                    <p class="text-gray-600">(061) 1234-5678</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-800">Email</h4>
+                                    <p class="text-gray-600">info@sditaisyiyah.sch.id</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-800">Jam Operasional</h4>
+                                    <p class="text-gray-600">Senin - Jumat: 07:00 - 15:00</p>
+                                    <p class="text-gray-600">Sabtu: 07:00 - 12:00</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6">
+                            <h3 class="text-lg font-bold text-gray-800 mb-3">Ikuti Kami</h3>
+                            <div class="flex space-x-4">
+                                <a href="#" class="w-10 h-10 bg-green-600 hover:bg-green-700 rounded-full flex items-center justify-center text-white transition duration-300">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"></path>
+                                    </svg>
+                                </a>
+                                <a href="#" class="w-10 h-10 bg-yellow-500 hover:bg-yellow-600 rounded-full flex items-center justify-center text-white transition duration-300">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z"></path>
+                                    </svg>
+                                </a>
+                                <a href="#" class="w-10 h-10 bg-green-600 hover:bg-green-700 rounded-full flex items-center justify-center text-white transition duration-300">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"></path>
+                                    </svg>
+                                </a>
+                                <a href="#" class="w-10 h-10 bg-yellow-500 hover:bg-yellow-600 rounded-full flex items-center justify-center text-white transition duration-300">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"></path>
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="md:w-1/2">
+                    <div class="bg-gray-50 p-6 rounded-lg shadow-sm">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">Kirim Pesan</h3>
+                        
+                        <form id="contactForm" class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
+                                    <input type="text" id="name" name="name" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500" required>
+                                </div>
+                                <div>
+                                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                    <input type="email" id="email" name="email" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500" required>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label for="subject" class="block text-sm font-medium text-gray-700 mb-1">Subjek</label>
+                                <input type="text" id="subject" name="subject" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500" required>
+                            </div>
+                            
+                            <div>
+                                <label for="message" class="block text-sm font-medium text-gray-700 mb-1">Pesan</label>
+                                <textarea id="message" name="message" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500" required></textarea>
+                            </div>
+                            
+                            <div>
+                                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md transition duration-300">Kirim Pesan</button>
+                            </div>
+                        </form>
+                        
+                        <div id="formSuccess" class="hidden mt-4 p-4 bg-green-100 text-green-700 rounded-md">
+                            Terima kasih! Pesan Anda telah terkirim. Kami akan segera menghubungi Anda.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Map Section -->
+    <section class="py-8 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="bg-green-600 text-white p-6 rounded-lg shadow-lg flex flex-col md:flex-row items-center justify-between">
+                <div class="mb-4 md:mb-0">
+                    <h3 class="text-xl font-bold mb-2">Lokasi Sekolah</h3>
+                    <p>Kunjungi kami di Jl. Pendidikan Islam No. 123, Tebing Tinggi</p>
+                </div>
+                <a href="#" class="bg-white text-green-600 hover:bg-green-100 font-medium py-2 px-6 rounded-lg transition duration-300">Lihat di Google Maps</a>
+            </div>
+            
+            <div class="mt-6 bg-gray-300 h-64 rounded-lg flex items-center justify-center">
+                <div class="text-center">
+                    <svg class="w-12 h-12 text-gray-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    <p class="text-gray-600 font-medium">Peta Lokasi Sekolah</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white pt-12 pb-6">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center text-white font-bold text-lg mr-3">SD</div>
+                        <h3 class="text-xl font-bold">SD IT 'Aisyiyah</h3>
+                    </div>
+                    <p class="text-gray-400 mb-4">Membentuk generasi Qur'ani, berakhlak mulia, dan berprestasi melalui pendidikan Islam berkualitas.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"></path>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z"></path>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"></path>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"></path>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Link Cepat</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#beranda" class="text-gray-400 hover:text-white transition">Beranda</a></li>
+                        <li><a href="#profil" class="text-gray-400 hover:text-white transition">Profil</a></li>
+                        <li><a href="#program" class="text-gray-400 hover:text-white transition">Program</a></li>
+                        <li><a href="#artikel" class="text-gray-400 hover:text-white transition">Artikel</a></li>
+                        <li><a href="#pendaftaran" class="text-gray-400 hover:text-white transition">Pendaftaran</a></li>
+                        <li><a href="#kontak" class="text-gray-400 hover:text-white transition">Kontak</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Program</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Program Tahfidz</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Program Akademik</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Pembinaan Karakter</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Ekstrakurikuler</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Program Beasiswa</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Informasi</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Pendaftaran</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Biaya Pendidikan</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Kalender Akademik</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Berita & Acara</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Karir</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-700 pt-6">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <p class="text-gray-400 text-sm mb-4 md:mb-0">&copy; 2023 SD Islam Terpadu 'Aisyiyah Tebing Tinggi. Hak Cipta Dilindungi.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white text-sm transition">Kebijakan Privasi</a>
+                        <a href="#" class="text-gray-400 hover:text-white text-sm transition">Syarat & Ketentuan</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Close mobile menu if open
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                }
+            });
+        });
+        
+        // Contact form submission
+        const contactForm = document.getElementById('contactForm');
+        const formSuccess = document.getElementById('formSuccess');
+        
+        contactForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Simulate form submission
+            setTimeout(() => {
+                formSuccess.classList.remove('hidden');
+                contactForm.reset();
+                
+                // Hide success message after 5 seconds
+                setTimeout(() => {
+                    formSuccess.classList.add('hidden');
+                }, 5000);
+            }, 1000);
+        });
+
+        // Admission form submission
+        const admissionForm = document.getElementById('admissionForm');
+        const admissionSuccess = document.getElementById('admissionSuccess');
+        
+        admissionForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Simulate form submission
+            setTimeout(() => {
+                admissionSuccess.classList.remove('hidden');
+                admissionForm.reset();
+                
+                // Hide success message after 5 seconds
+                setTimeout(() => {
+                    admissionSuccess.classList.add('hidden');
+                }, 5000);
+            }, 1000);
+        });
+
+        // Admin functionality
+        const adminLoginBtn = document.getElementById('adminLoginBtn');
+        const mobileAdminBtn = document.getElementById('mobileAdminBtn');
+        const loginModal = document.getElementById('loginModal');
+        const closeLoginModal = document.getElementById('closeLoginModal');
+        const loginForm = document.getElementById('loginForm');
+        const loginError = document.getElementById('loginError');
+        const adminPanel = document.getElementById('adminPanel');
+        const closeAdminPanel = document.getElementById('closeAdminPanel');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const videoEditModal = document.getElementById('videoEditModal');
+        const closeVideoModal = document.getElementById('closeVideoModal');
+        const videoEditForm = document.getElementById('videoEditForm');
+        const editButtons = document.querySelectorAll('.edit-video-btn');
+        const addArticleBtn = document.getElementById('addArticleBtn');
+        const editAdmissionFormBtn = document.getElementById('editAdmissionFormBtn');
+
+        // Video data storage
+        const videoData = {
+            hero: { title: "Sekolah Unggulan Berbasis Islam", description: "Video profil sekolah", embed: "" },
+            profile: { title: "Profil Sekolah", description: "Sejarah dan perkembangan sekolah", embed: "" },
+            tahfidz: { title: "Program Tahfidz", description: "Program hafalan Al-Qur'an", embed: "" },
+            academic: { title: "Program Akademik", description: "Kegiatan belajar mengajar", embed: "" },
+            character: { title: "Pembinaan Karakter", description: "Pembentukan akhlak islami", embed: "" },
+            facilitiesMain: { title: "Fasilitas Sekolah", description: "Fasilitas lengkap untuk siswa", embed: "" },
+            galleryMain: { title: "Galeri Kegiatan", description: "Dokumentasi kegiatan sekolah", embed: "" },
+            gallery1: { title: "Kegiatan Belajar", description: "Suasana belajar di kelas", embed: "" },
+            gallery2: { title: "Program Tahfidz", description: "Siswa menghafal Al-Qur'an", embed: "" },
+            gallery3: { title: "Kegiatan Olahraga", description: "Aktivitas olahraga siswa", embed: "" },
+            gallery4: { title: "Pentas Seni Islami", description: "Pertunjukan seni dan budaya", embed: "" }
+        };
+
+        // Article data storage
+        let articles = [
+            {
+                id: 1,
+                title: "Prestasi Gemilang Tim Tahfidz di Kompetisi Provinsi",
+                category: "prestasi",
+                date: "2023-09-15",
+                image: "green",
+                content: "Tim Tahfidz SD Islam Terpadu 'Aisyiyah Tebing Tinggi berhasil meraih juara 1 dalam Kompetisi Hafalan Al-Qur'an tingkat Provinsi Sumatera Utara. Prestasi ini merupakan hasil dari kerja keras dan dedikasi para siswa serta bimbingan intensif dari para guru tahfidz sekolah. Kepala Sekolah menyampaikan rasa bangga dan apresiasi atas pencapaian luar biasa ini."
+            },
+            {
+                id: 2,
+                title: "Peringatan Maulid Nabi Muhammad SAW",
+                category: "kegiatan",
+                date: "2023-09-28",
+                image: "yellow",
+                content: "SD Islam Terpadu 'Aisyiyah Tebing Tinggi mengadakan peringatan Maulid Nabi Muhammad SAW dengan berbagai kegiatan islami. Acara diisi dengan pembacaan shalawat, ceramah tentang keteladanan Rasulullah, dan penampilan kreasi siswa. Kegiatan ini bertujuan untuk menanamkan kecintaan kepada Rasulullah dan menerapkan nilai-nilai keislaman dalam kehidupan sehari-hari."
+            },
+            {
+                id: 3,
+                title: "Pendaftaran Tahun Ajaran 2023/2024 Telah Dibuka",
+                category: "pengumuman",
+                date: "2023-10-01",
+                image: "green",
+                content: "SD Islam Terpadu 'Aisyiyah Tebing Tinggi membuka pendaftaran siswa baru untuk tahun ajaran 2023/2024. Pendaftaran dapat dilakukan secara online melalui website sekolah atau langsung datang ke sekretariat pendaftaran di sekolah. Kuota terbatas, segera daftarkan putra-putri Anda untuk mendapatkan pendidikan Islam berkualitas."
+            }
+        ];
+
+        // Admission form fields data
+        let formFields = [
+            { id: 1, label: "Nama Lengkap Siswa", type: "text", required: true },
+            { id: 2, label: "Tanggal Lahir", type: "date", required: true },
+            { id: 3, label: "Nama Orang Tua/Wali", type: "text", required: true },
+            { id: 4, label: "Nomor Telepon", type: "tel", required: true },
+            { id: 5, label: "Alamat Lengkap", type: "textarea", required: true },
+            { id: 6, label: "Asal Sekolah (TK/RA)", type: "text", required: false },
+            { id: 7, label: "Jenis Pendaftaran", type: "select", required: true, options: ["Reguler", "Beasiswa", "Pindahan"] }
+        ];
+
+        // Check if user<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'963a8fb4b30d3ffc',t:'MTc1MzI2NzI0NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
